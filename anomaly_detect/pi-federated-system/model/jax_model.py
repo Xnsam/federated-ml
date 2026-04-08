@@ -31,7 +31,7 @@ class JaxAD(ModelAdapter):
         pure function for model inference
         """
         w1, w2 = params
-        latent = jnp.nn.relu(jnp.dot(x, w1))
+        latent = jax.nn.relu(jnp.dot(x, w1))
         return jnp.dot(latent, w2)
     
     def _get_compiled_train_step(self):

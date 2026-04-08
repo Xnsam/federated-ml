@@ -44,4 +44,10 @@ def run_client():
                 model.save(LOCAL_STORAGE)
                 raw_buffer = raw_buffer[-WINDOW_SIZE:]
         time.sleep(0.01) # 100 hz Pie
-    
+
+if __name__ == "__main__":
+    try:
+        run_client()
+    except Exception as e:
+        print(f"Client Crashed: {e}")
+        time.sleep(60)

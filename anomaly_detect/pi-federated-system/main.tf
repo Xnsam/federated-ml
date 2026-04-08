@@ -2,13 +2,13 @@ terraform {
   required_providers {
     docker = {
       source = "kreuzwerker/docker"
-      version = "~> 3.0.1"
+      version = ">= 3.0.12"
     }
   }
 }
 
 provider "docker" {
-  host = "unix:///var/run/docker.sock"
+
 }
 
 
@@ -62,7 +62,7 @@ resource "docker_container" "clients" {
   # limit cpu: 1.0 represent on full core of your host
   # most PIs have 4 cores but slower than pc, so using 0.5 or 1 gives realistic feel
   cpu_set = "0"
-  cpus = 1.0
+  cpu_shares = 1024
 
   networks_advanced {
     name = docker_network.fed_network.name
@@ -71,6 +71,7 @@ resource "docker_container" "clients" {
   command = ["python", "client.py"]
 
   env = [
+    "PYTHONBUFFERED=1",
     "APP_ROLE=client",
     "MODEL_TYPE=jax_light",
     "CLIENT_ID=pi-${count.index + 1}",
