@@ -1,0 +1,6 @@
+jax[cpu]
+optax
+fastapi
+uvicorn
+requests
+numpy

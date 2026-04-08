@@ -1,19 +1,19 @@
-# -- stage 1: Base - shared dependencies --
-FROM python:3.9-slim AS base
-WORKDIR /app
+# Builder
+FROM python:3.12-slim as builder
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /build
+
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN uv pip install --system --no-cache -r requirements.txt
 
-# -- stage 2: Server --
-FROM base AS server
-COPY server/server.py .
-EXPOSE 8080
-CMD ["python", "server.py"]
+# runtime
+FROM python:3.12-slim
 
-# -- stage 3: client --
-FROM base AS client
-COPY client/client_app.py .
-ENV SERVER_ADDRESS=fl-server:8080
-EXPOSE 8000
-CMD ["uvicorn", "client_app:app", "--host", "0.0.0.0", "--port", "8000"]
+WORKDIR /app
 
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+COPY . .
