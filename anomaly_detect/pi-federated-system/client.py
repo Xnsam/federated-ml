@@ -10,7 +10,10 @@ from model.factory import ModelFactory
 LOCAL_STORAGE = "/app/data/"
 model_name = os.getenv("MODEL_TYPE", "jax_light")
 
-def get_realtime_sensor_data(num_features=32):
+def get_realtime_sensor_data(num_features=8):
+    """
+    randomised sensor data
+    """
     return np.random.randn(num_features).astype(np.float32)
 
 
