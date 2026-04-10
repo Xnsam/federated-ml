@@ -17,31 +17,33 @@ def get_realtime_sensor_data(num_features=8):
     """
     randomised sensor data
     """
-    print(f"Fetching data...{client_id}")
     is_glitching = False
     try:
         r = requests.get(
             f"{server_url}/chaos_status/{client_id}", 
             timeout=0.5
         )
-        is_glitching = r.json().get("chaos_mode", False)
+        resp = r.json()
+        print("chaos mode", resp)
+        is_glitching = resp.get("chaos_mode", False)
     except:
         pass
 
     if is_glitching:
-        return np.random.uniform(5, 10, num_features).astype(np.float32)
+        print("added glitch")
+        return np.random.uniform(10, 20, num_features).astype(np.float32)
 
     return np.random.normal(0, 1, num_features).astype(np.float32)
 
 
 # client control logic
 def run_client():
-    print('Running model')
     model = ModelFactory.get_model(model_name)
     model.load(LOCAL_STORAGE)
 
     raw_buffer = []
     WINDOW_SIZE = 20
+    ANOMALY_DETECTED = False
 
     while True:
         reading = get_realtime_sensor_data()
@@ -55,11 +57,13 @@ def run_client():
             anomaly_score = model.predict(current_window)
 
             if anomaly_score > THRESHOLD:
-                print(f" Anomaly detect: {anomaly_score: .4f}")
+                ANOMALY_DETECTED = True
+                print(f" ----> + <----- Anomaly detect: {anomaly_score: .4f}")
             else:
-                print(f"No Anomaly detected :: System Stable :: {anomaly_score}")
+                print(f"Anomaly Score: {anomaly_score}")
             
-            if len(raw_buffer) >= 120:
+            if len(raw_buffer) >= 120 and ANOMALY_DETECTED:
+                raw_buffer = raw_buffer[-120:]
                 training_batch = np.array(raw_buffer).reshape(-1, 160)
 
                 loss = model.train(training_batch, client_id=client_id)

@@ -58,7 +58,6 @@ class JaxAD(ModelAdapter):
         calculates reconstruction error
         higher values indicate a higher probability of an anomaly
         """
-        print("model prediction in process!")
         reconstruction = self._forward(self.params, x)
         return jnp.mean(jnp.square(reconstruction - x))
     

@@ -22,6 +22,9 @@ resource "docker_image" "fed_app" {
   name = "fed-ml-app:latest"
   build {
     context = "." # path to your dockerfile and source code
+    build_args = {
+      cache_break = md5(file("${path.module}/client.py"))
+    }
   }
 }
 

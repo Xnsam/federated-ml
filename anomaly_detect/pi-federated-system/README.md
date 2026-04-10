@@ -7,8 +7,6 @@ Arch
 
 ![alt text](images/image.png)
 
-
-
 -----
 How to run in cli
 -----
@@ -42,3 +40,25 @@ finally, `docker ps` should result <br>
 
 Now, to stop everything <br>
 `terraform destory`
+
+-----
+To check the logs
+-----
+This would open an output stream of logs in the terminal
+<code>
+docker logs -f client-1 
+</code>
+
+![alt text](images/output1.png)
+
+<em>Can this be considered as systemic errors ? </em><br>
+![alt text](images/ad.png)
+
+
+-----
+To trigger an attack
+-----
+![alt text](images/attack.png)
+
+<em> After attack </em><br>
+![alt text](images/after_att.png)
