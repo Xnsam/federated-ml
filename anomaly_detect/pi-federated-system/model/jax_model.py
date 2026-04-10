@@ -58,13 +58,15 @@ class JaxAD(ModelAdapter):
         calculates reconstruction error
         higher values indicate a higher probability of an anomaly
         """
+        print("model prediction in process!")
         reconstruction = self._forward(self.params, x)
         return jnp.mean(jnp.square(reconstruction - x))
     
-    def train(self, batch, lr=0.006):
+    def train(self, batch, lr=0.006, client_id=None):
         """
         executes the JIT-compiled training step and updates internal weights
         """
+        print(f"performing training locally : {client_id}")
         self.param, loss = self._compiled_train_step(
             self.params, batch, lr
         )
@@ -77,6 +79,7 @@ class JaxAD(ModelAdapter):
         self.params = [jnp.array(w) for w in weights]
     
     def save(self, path):
+        print('Saving the model')
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, 'w') as f:
             json.dump(self.get_weights(), f)
@@ -84,6 +87,7 @@ class JaxAD(ModelAdapter):
     def load(self, path: str):
         path += "/local_model.json"
         if os.path.exists(path):
+            print("loading local model")
             try:
                 with open(path, 'r') as f:
                     self.set_weights(json.load(f))

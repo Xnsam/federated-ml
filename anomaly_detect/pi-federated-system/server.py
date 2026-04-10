@@ -2,13 +2,14 @@ import os
 import uvicorn
 import numpy as np
 from fastapi import FastAPI, Body
-from typing import List, Optional
+from typing import List, Optional, Dict
 import json
+
 
 app = FastAPI(title="Federated Aggregator Server")
 
 global_weights: Optional[List[List[float]]] = None
-
+client_chaos_registry: Dict[str, bool] = {}
 updates_buffer = []
 
 MIN_CLIENTS = int(os.getenv("MIN_CLIENTS", 3))
@@ -38,7 +39,6 @@ def load_weights_from_disk():
         except Exception:
             return None
     return None
-
 
 def aggregate_and_update():
     """
@@ -91,6 +91,23 @@ async def pull_global():
         return {"weights": None, "info": "Model not initialized yet"}
     
     return {"weights": global_weights}
+
+@app.get("/trigger_anomaly/{client_id}")
+async def trigger_client_anomaly(client_id: str, status: bool):
+    """
+    Sets the anomaly status for a specific client.
+    """
+    client_chaos_registry[client_id] = status
+    print(f"Chaos registry : ", client_chaos_registry)
+    state = "ENABLED" if status else "DISABLED"
+    return {"message": f"Chaos mode {state} for {client_id}"}
+
+@app.get("/chaos_status/{client_id}")
+async def get_client_status(client_id: str):
+    """
+    Endpoint for clients to poll their specific status.
+    """
+    return {"chaos_mode": client_chaos_registry.get(client_id, False)}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
