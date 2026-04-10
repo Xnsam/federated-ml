@@ -62,3 +62,8 @@ To trigger an attack
 
 <em> After attack </em><br>
 ![alt text](images/after_att.png)
+
+----
+Monitor dashboard
+----
+![alt text](images/monitor.png)

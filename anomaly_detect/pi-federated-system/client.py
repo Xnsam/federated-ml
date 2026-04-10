@@ -56,6 +56,22 @@ def run_client():
             
             anomaly_score = model.predict(current_window)
 
+            try:
+                params = {"score": round(float(anomaly_score), 4)}
+                headers = {"accept": "application/json"}
+                response = requests.post(
+                    f"{server_url}/push_score/{client_id}",
+                    params=params,
+                    headers=headers,
+                    timeout=0.1
+                )
+                if response.status_code == 200:
+                    print("pushed data for dashboard")
+                else:
+                    print("error", response.content)
+            except:
+                pass
+
             if anomaly_score > THRESHOLD:
                 ANOMALY_DETECTED = True
                 print(f" ----> + <----- Anomaly detect: {anomaly_score: .4f}")

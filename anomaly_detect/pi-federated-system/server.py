@@ -4,6 +4,7 @@ import numpy as np
 from fastapi import FastAPI, Body
 from typing import List, Optional, Dict
 import json
+from datetime import datetime 
 
 
 app = FastAPI(title="Federated Aggregator Server")
@@ -108,6 +109,29 @@ async def get_client_status(client_id: str):
     Endpoint for clients to poll their specific status.
     """
     return {"chaos_mode": client_chaos_registry.get(client_id, False)}
+
+latest_scores = {}
+@app.post("/push_score/{client_id}")
+async def push_score(client_id: str, score: float):
+    global latest_scores
+    if client_id in latest_scores:
+        latest_scores[client_id].append({
+            "score": score,
+            "timestamp": datetime.now()
+        })
+    else:
+        latest_scores[client_id] = [
+            {"score": score, "timestamp": datetime.now()}
+        ]
+    latest_scores[client_id] = latest_scores[client_id][-120:] # last 120 - 2 mins
+    return {"status": "received"}
+
+@app.get("/stats")
+async def get_stats():
+    global latest_scores
+    return latest_scores
+
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

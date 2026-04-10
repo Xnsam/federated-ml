@@ -11,7 +11,6 @@ provider "docker" {
 
 }
 
-
 # create a dedicated network for fed cluster
 resource "docker_network" "fed_network" {
   name = "federated_ml_network"
@@ -24,6 +23,9 @@ resource "docker_image" "fed_app" {
     context = "." # path to your dockerfile and source code
     build_args = {
       cache_break = md5(file("${path.module}/client.py"))
+    }
+    label = {
+      build_id = timestamp()
     }
   }
 }
@@ -90,5 +92,22 @@ resource "docker_container" "clients" {
   volumes {
     host_path = abspath("${path.module}/client_data_${count.index}")
     container_path = "/app/data"
+  }
+}
+
+resource "docker_container" "dashboard" {
+  name = "fed_dashboard"
+  image = docker_image.fed_app.image_id
+  networks_advanced {
+    name = docker_network.fed_network.name
+  }
+  # override the command to run streamlit
+  command = [
+    "streamlit", "run", "dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"
+  ]
+
+  ports {
+    internal = 8501
+    external = 8501
   }
 }
